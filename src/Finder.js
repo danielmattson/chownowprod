@@ -1,5 +1,6 @@
 import React from 'react';
 import Yelp from 'yelp-fusion';
+import logo from './logo.png';
 
 const YELP_API_KEY = `-HeP8h5vxG9m7oMgl19pfdOInl00TMSuYC7QAMnVxn9QJszINxaiYs5CLHjksNvGEDEBI0T9LF3XEiL7hYIusLAknMfxYEEaQLVhnbIMnV4JemAYVxo0r3Xl_mFTXnYx`;
 const YELP_CLIENT_ID = `5Kf0u7VlZDAGDCaueGe1EA`;
