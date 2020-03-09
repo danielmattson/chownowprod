@@ -42,15 +42,11 @@ async function getRestaurants(state) {
         'Authorization': `Bearer ${YELP_API_KEY}`
       }
     });
-  console.log('data');
-  console.log(response.json());
-  const thing = response.json();
-  data = thing.json();
-  console.log(thing);
-
+  const data = response.json();
+  console.log(data);
+  alert('check console for Yelp API data');
   return data;
 }
-
 
 export class Finder extends React.Component {
   constructor(props) {
@@ -81,13 +77,13 @@ export class Finder extends React.Component {
     // send API call and show map stuff
     const data = getRestaurants(this.state);
 
-    restaurant = data.businesses;
-    console.log(restaurant);
+    // restaurant = data.businesses[0];
+    // console.log(restaurant);
 
-    const newLat = restaurant.coordinates.latitude;
-    const newLng = restaurant.coordinates.longitude;
-    alert(`Eat at ${restaurant.name}! It is located at ${newLat}, ${newLng}`);
-    this.setState({markers: [{lat: newLat, lng: newLng}]});
+    // const newLat = restaurant.coordinates.latitude;
+    // const newLng = restaurant.coordinates.longitude;
+    // alert(`Eat at ${restaurant.name}! It is located at ${newLat}, ${newLng}`);
+    // this.setState({markers: [{lat: newLat, lng: newLng}]});
   };
 
   render() {
