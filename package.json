@@ -8,17 +8,18 @@
     "@testing-library/user-event": "^7.2.1",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
-    "react-helmet": "^5.2.1",
+    "react-google-maps": "^9.4.5",
     "react-scripts": "3.4.0",
+    "recompose": "^0.30.0",
     "yelp-fusion": "^3.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -35,8 +36,8 @@
       "last 1 safari version"
     ]
   },
+  "homepage": "https://danielmattson.github.io/ChowNow",
   "devDependencies": {
-    "gh-pages": "^2.2.0"
-  },
-  "homepage": "https://danielmattson.github.io/ChowNow"
+    "surge": "^0.21.3"
+  }
 }

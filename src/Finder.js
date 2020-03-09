@@ -1,12 +1,56 @@
 import React from 'react';
-import Yelp from 'yelp-fusion';
-import logo from './logo.png';
+import {withGoogleMap, GoogleMap, Marker, InfoWindow} from 'react-google-maps';
 
 const YELP_API_KEY = `-HeP8h5vxG9m7oMgl19pfdOInl00TMSuYC7QAMnVxn9QJszINxaiYs5CLHjksNvGEDEBI0T9LF3XEiL7hYIusLAknMfxYEEaQLVhnbIMnV4JemAYVxo0r3Xl_mFTXnYx`;
-const YELP_CLIENT_ID = `5Kf0u7VlZDAGDCaueGe1EA`;
-const client = Yelp.client(YELP_API_KEY);
-const latitude = '43.133949';
-const longitude = '-70.918968';
+
+let latitude = null;
+let longitude = null;
+
+let data = null;
+let restaurant = null;
+
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(setPosition);
+} else {
+  alert('Geolocation not supported in your browser.');
+}
+
+let lat = parseFloat(43.133949);
+let lng = parseFloat(-70.918968);
+const MyGoogleMap = withGoogleMap(props => (
+  <GoogleMap
+    defaultCenter = { { lat: lat, lng: lng } }
+    defaultZoom = { 13 }>
+    
+  </GoogleMap>));
+
+
+async function setPosition(position) {
+  latitude = await position.coords.latitude;
+  longitude = await position.coords.longitude;
+  alert(`Your Location: latitude: ${latitude} longitude: ${longitude}`);
+}
+
+async function getRestaurants(state) {
+  const REQ_URL = `https://cors-anywhere.herokuapp.com/https://api.yelp.com/v3/businesses/search?term=${state.keyword}&categories=restaurants&latitude=${latitude}&longitude=${longitude}&price=${state.price}&radius=${state.radius}`;
+  
+  const response = await fetch(REQ_URL,
+    {
+      method: 'GET',
+      mode: 'cors',
+      headers: {
+        'Authorization': `Bearer ${YELP_API_KEY}`
+      }
+    });
+  console.log('data');
+  console.log(response.json());
+  const thing = response.json();
+  data = thing.json();
+  console.log(thing);
+
+  return data;
+}
+
 
 export class Finder extends React.Component {
   constructor(props) {
@@ -15,8 +59,9 @@ export class Finder extends React.Component {
     this.state = {
        keyword: '',
        price: '2',
-       radius: '10'
-    };
+       radius: '40000',
+       markers: [],
+    }
   }
 
   updateKeyword = (event) => {
@@ -28,70 +73,73 @@ export class Finder extends React.Component {
   };
   
   updateRadius = (event) => {
-    this.setState({radius: event.target.value});
+    this.setState({radius: (event.target.value * 1000)});
   };
 
-  submit = async event => {
+  submit = event => {
     event.preventDefault();
     // send API call and show map stuff
-    const data = this.getRestaurants;
-    
-    alert(`keyword: ${this.state.keyword}\nprice: ${this.state.price}\nradius: ${this.state.radius} meters`);
-  };
+    const data = getRestaurants(this.state);
 
-  getRestaurants = async() => {
-    const res = await client.search({
-      url: 'https://api.yelp.com/v3/businesses/search/',
-      term: this.state.keyword,
-      price: this.state.price,
-      radius: this.state.radius,
-      latitude: latitude,
-      longitude: longitude
-    });
-    const data = await res.json();
-    return data;
+    restaurant = data.businesses;
+    console.log(restaurant);
+
+    const newLat = restaurant.coordinates.latitude;
+    const newLng = restaurant.coordinates.longitude;
+    alert(`Eat at ${restaurant.name}! It is located at ${newLat}, ${newLng}`);
+    this.setState({markers: [{lat: newLat, lng: newLng}]});
   };
 
   render() {
     const {keyword, price, radius} = this.state;
+    
+    // let lat = parseFloat(`${latitude}`);
+    // let lng = parseFloat(`${longitude}`);
+    
     return (
       <div>
         <form onSubmit={this.submit}>
             {/* keyword field want to add autocomplete from Yelp API*/}
-            <div class='form-group'>
-              <label for='keyword'>Keyword:</label><br/>
-              <input id='keyword' type='text' class='form-control' value={keyword} onChange={this.updateKeyword}/>
+            <div>
+              <label>Keyword:
+              <input id='keyword' type='text' value={keyword} onChange={this.updateKeyword}/>
+              </label>
               <br/>
             </div>
           
             {/* price field: in Yelp API prices are 1,2,3,4 */}
             <p>Price:</p>
-            <div class='custom-control custom-radio'>
-              <input id='super' type='radio' name='price' value='4' class='custom-control-input' checked={price === '4'} onChange={this.updatePrice}/>
-              <label for='super' class='custom-control-label'>$$$$</label><br/>
+            <div className='custom-control custom-radio'>
+              <input id='super' type='radio' name='price' value='4' checked={price === '4'} onChange={this.updatePrice}/>
+              <label htmlFor='super'>$$$$</label><br/>
             </div>
-            <div class='custom-control custom-radio'>
-              <input id='high' type='radio' name='price' value='3' class='custom-control-input' checked={price === '3'} onChange={this.updatePrice}/>
-              <label for='high' class='custom-control-label'>$$$</label><br/>
+            <div className='custom-control custom-radio'>
+              <input id='high' type='radio' name='price' value='3' checked={price === '3'} onChange={this.updatePrice}/>
+              <label htmlFor='high'>$$$</label><br/>
             </div>
-            <div class='custom-control custom-radio'>
-              <input id='mid' type='radio' name='price' value='2' class='custom-control-input' checked={price === '2'} onChange={this.updatePrice}/>
-              <label for='mid' class='custom-control-label'>$$</label><br/>
+            <div className='custom-control custom-radio'>
+              <input id='mid' type='radio' name='price' value='2' checked={price === '2'} onChange={this.updatePrice}/>
+              <label htmlFor='mid'>$$</label><br/>
             </div>
-            <div class='custom-control custom-radio'>
-              <input id='low' type='radio' name='price' value='1' class='custom-control-input' checked={price === '1'} onChange={this.updatePrice}/>
-              <label for='low' class='custom-control-label'>$</label><br/><br/>
+            <div className='custom-control custom-radio'>
+              <input id='low' type='radio' name='price' value='1' checked={price === '1'} onChange={this.updatePrice}/>
+              <label htmlFor='low'>$</label><br/><br/>
             </div>
           
             {/* radius field, in meters */}
-            <div class='form-group'>
-              <label for='radius'>Radius (meters):</label>
-              <input id='radius' type='number' class='form-control' value={radius} onChange={this.updateRadius}/>
-              <br />
+            <div className='form-group'>
+              <label>Radius in kilometers (max 40):
+              <input id='radius' type='number' value={radius / 1000} onChange={this.updateRadius}/>
+              </label>
             </div>
-            <button class='btn btn-primary'>Search</button>
+            <button className='btn btn-primary'>Search</button>
           </form>
+          <div>
+            <MyGoogleMap isMarkerShown={this.state.hasMarker} containerElement={ <div style={{ height: `500px`, width: '500px' }} /> }
+            mapElement={ <div style={{ height: `100%` }} /> }/>
+          </div>
       </div>
+
   );
   }
 }
